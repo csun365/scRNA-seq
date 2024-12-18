@@ -1,1 +1,9 @@
 streamlit
+numpy
+pandas
+ipython
+matplotlib
+scanpy
+scikit-learn
+umap-learn
+scipy
