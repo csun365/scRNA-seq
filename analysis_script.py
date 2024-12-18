@@ -64,7 +64,7 @@ class scRNAseqAnalysis():
         plt.scatter(
             data[self.conditions == self.name1,0], 
             data[self.conditions == self.name1,1], 
-            c="tab:orange", label=self.name1, alpha=0.5, s=1
+            c="b", label=self.name1, alpha=0.5, s=1
         ) 
         plt.scatter(
             data[self.conditions == self.name2,0], 
@@ -74,26 +74,26 @@ class scRNAseqAnalysis():
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.legend()
-        plt.show()
+        return plt
 
     def pca(self, n_components=2, visible=True):
         pca_obj = PCA(n_components=n_components)
         self.pca_result = pca_obj.fit_transform(self.cellxgene)
         if visible:
             print("Variance Maintained: ", pca_obj.explained_variance_ratio_)
-            self.plot_2d(self.pca_result, "PC1", "PC2")
+            return self.plot_2d(self.pca_result, "PC1", "PC2")
 
     def tsne(self, n_components=2, visible=True):
         tsne_obj = TSNE(n_components=n_components, random_state=0)
         self.tsne_result = tsne_obj.fit_transform(self.cellxgene)
         if visible:
-            self.plot_2d(self.tsne_result, "t-SNE", "t-SNE")
+            return self.plot_2d(self.tsne_result, "t-SNE", "t-SNE")
 
     def umap(self, n_neighbors=15, visible=True):
         umap_obj = umap.UMAP(n_neighbors=n_neighbors, min_dist=0.5, metric="euclidean", random_state=0)
         self.umap_result = umap_obj.fit_transform(self.cellxgene)
         if visible:
-            self.plot_2d(self.umap_result, "UMAP1", "UMAP2")
+            return self.plot_2d(self.umap_result, "UMAP1", "UMAP2")
 
     def lookup_gene_umap(self, gene_name):
         if self.umap_result is None:
@@ -104,7 +104,7 @@ class scRNAseqAnalysis():
         plt.title(gene_name)
         plt.xlabel("UMAP1")
         plt.ylabel("UMAP2")
-        plt.show()
+        return plt
     
     def diff_exp(self, threshold=0.05):
         results = []
@@ -112,7 +112,7 @@ class scRNAseqAnalysis():
             group1 = self.cellxgene.loc[self.conditions == self.name1, gene]
             group2 = self.cellxgene.loc[self.conditions == self.name2, gene]
             _, p_value = mannwhitneyu(group1, group2)
-            log_fc = np.log2(np.mean(group2) + 1) - np.log2(np.mean(group1) + 1)
+            log_fc = np.log2(np.mean(group1) + 1) - np.log2(np.mean(group2) + 1)
             results.append({"gene": gene, "log2FC": log_fc, "p_value": p_value})
         self.diff_exp_df = pd.DataFrame(results)
         
@@ -136,7 +136,7 @@ class scRNAseqAnalysis():
         plt.xlabel("Normalized Expression")
         plt.ylabel("Relative Frequency")
         plt.legend()
-        plt.show()
+        return plt, self.diff_exp_df[self.diff_exp_df["gene"] == gene_name]
 
     def volcano(self, fc_threshold=2, p_threshold=0.05):
         if self.diff_exp_df is None:
